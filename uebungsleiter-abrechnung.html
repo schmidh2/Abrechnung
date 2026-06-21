@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Übungsleiter-Abrechnung</title>
+<style>
+  :root{
+    --bg: #f6f4ee;
+    --panel: #ffffff;
+    --ink: #1f2a24;
+    --ink-soft: #5b6b62;
+    --line: #dfe3d8;
+    --green: #2f5d4f;
+    --green-deep: #1c3c32;
+    --accent: #c97a3d;
+    --accent-soft: #f1e2d2;
+    --danger: #b3503f;
+    --radius: 10px;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: 'Iowan Old Style','Georgia', serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .data-font{ font-family: 'Courier New', ui-monospace, monospace; }
+  header{
+    background: var(--green-deep);
+    color: #f3efe4;
+    padding: 28px 24px 22px;
+    border-bottom: 4px solid var(--accent);
+  }
+  header h1{
+    margin:0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+  header p{
+    margin: 6px 0 0;
+    color: #c7d3c9;
+    font-size: .92rem;
+  }
+  main{
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 22px 18px 60px;
+  }
+  .panel{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .panel h2{
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+    color: var(--green-deep);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .panel h2 .num{
+    font-family: 'Courier New', monospace;
+    font-size: .8rem;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    width: 22px; height:22px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  label{
+    display:block;
+    font-size: .78rem;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+  input, select{
+    width:100%;
+    padding: 9px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    font-size: .95rem;
+    background: #fcfcfa;
+    color: var(--ink);
+    font-family: inherit;
+  }
+  input:focus, select:focus{
+    outline: 2px solid var(--green);
+    outline-offset: 1px;
+  }
+  .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .row3{
+    display:grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 560px){
+    .row, .row3{ grid-template-columns: 1fr; }
+  }
+  .field{ margin-bottom: 0; }
+  button{
+    font-family: inherit;
+    cursor:pointer;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font-size: .9rem;
+    font-weight: 600;
+  }
+  .btn-primary{
+    background: var(--green);
+    color: #fff;
+  }
+  .btn-primary:hover{ background: var(--green-deep); }
+  .btn-secondary{
+    background: var(--accent-soft);
+    color: var(--green-deep);
+  }
+  .btn-secondary:hover{ background: #e8d2b9; }
+  .btn-danger{
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    padding: 5px 9px;
+    font-size: .78rem;
+  }
+  .btn-danger:hover{ background: #fbeae6; }
+  .btn-ghost{
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    padding: 5px 9px;
+    font-size: .78rem;
+  }
+  .btn-ghost:hover{ border-color: var(--green); color: var(--green-deep); }
+  .preview-amount{
+    font-family: 'Courier New', monospace;
+    font-size: 1.4rem;
+    color: var(--green-deep);
+    background: #f0efe7;
+    border: 1px dashed var(--line);
+    border-radius: 7px;
+    padding: 10px 14px;
+    text-align: right;
+    margin-top: 4px;
+  }
+  .preview-amount span{ font-size: .7rem; color: var(--ink-soft); display:block; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 2px;}
+  table{
+    width:100%;
+    border-collapse: collapse;
+    font-size: .88rem;
+  }
+  th{
+    text-align:left;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--green-deep);
+    padding: 6px 8px;
+  }
+  td{
+    padding: 8px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  td.num, th.num{ text-align: right; font-family: 'Courier New', monospace; }
+  tr.empty td{
+    color: var(--ink-soft);
+    font-style: italic;
+    text-align:center;
+    padding: 20px 8px;
+  }
+  .verein-chip{
+    display:flex; align-items:center; justify-content:space-between;
+    background:#fafaf5; border:1px solid var(--line); border-radius:7px;
+    padding: 8px 10px; margin-bottom:8px; gap:10px;
+  }
+  .verein-chip .meta{ font-size:.85rem; }
+  .verein-chip .meta .name{ font-weight:600; color: var(--green-deep); }
+  .verein-chip .meta .satz{ color: var(--ink-soft); font-family:'Courier New',monospace; font-size:.8rem; }
+  .verein-chip .actions{ display:flex; gap:6px; }
+  .summary-grid{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    row-gap: 8px;
+    font-size: .92rem;
+  }
+  .summary-grid .label{ color: var(--ink-soft); }
+  .summary-grid .val{ font-family:'Courier New',monospace; text-align:right; }
+  .grand-total{
+    border-top: 2px solid var(--green-deep);
+    margin-top: 10px;
+    padding-top: 10px;
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .grand-total .label{ font-size: .95rem; color: var(--green-deep); font-weight:600; }
+  .grand-total .val{ font-family:'Courier New',monospace; font-size: 1.6rem; color: var(--accent); font-weight:700; }
+  .toolbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom: 14px;}
+  .hint{ font-size:.78rem; color: var(--ink-soft); margin-top: 8px; }
+  .add-verein-form{
+    display:grid; grid-template-columns: 1fr 100px auto; gap: 8px; align-items:end; margin-top: 12px;
+  }
+  @media (max-width:560px){ .add-verein-form{ grid-template-columns: 1fr; } }
+  footer{
+    text-align:center; color: var(--ink-soft); font-size: .75rem; padding: 10px 0 30px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Übungsleiter-Abrechnung</h1>
+  <p>Einsätze erfassen, Stundensätze automatisch berechnen, als Excel exportieren — alles lokal in diesem Browser gespeichert.</p>
+</header>
+
+<main>
+
+  <section class="panel">
+    <h2><span class="num">1</span> Vereine &amp; Stundensätze</h2>
+    <div id="vereinListe"></div>
+    <div class="add-verein-form">
+      <div class="field">
+        <label for="neuerVereinName">Vereinsname</label>
+        <input id="neuerVereinName" type="text" placeholder="z. B. TSV Musterstadt">
+      </div>
+      <div class="field">
+        <label for="neuerVereinSatz">Satz €/Std.</label>
+        <input id="neuerVereinSatz" type="number" step="0.01" min="0" placeholder="18,00">
+      </div>
+      <button class="btn-secondary" onclick="vereinHinzufuegen()">+ Verein anlegen</button>
+    </div>
+    <p class="hint">Stundensätze lassen sich jederzeit anpassen — bereits erfasste Einsätze behalten ihren ursprünglich berechneten Betrag.</p>
+  </section>
+
+  <section class="panel">
+    <h2><span class="num">2</span> Einsatz eintragen</h2>
+    <div class="row3">
+      <div class="field">
+        <label for="einsatzVerein">Verein</label>
+        <select id="einsatzVerein" onchange="vorschauAktualisieren()"></select>
+      </div>
+      <div class="field">
+        <label for="einsatzDatum">Datum</label>
+        <input id="einsatzDatum" type="date">
+      </div>
+      <div class="field">
+        <label for="einsatzStunden">Stunden</label>
+        <input id="einsatzStunden" type="number" step="0.25" min="0" placeholder="1,5" oninput="vorschauAktualisieren()">
+      </div>
+    </div>
+    <div class="preview-amount" id="vorschau">
+      <span>Berechneter Betrag</span>
+      0,00 €
+    </div>
+    <div style="margin-top:14px; display:flex; justify-content:flex-end;">
+      <button class="btn-primary" onclick="einsatzHinzufuegen()">Eintragen</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <h2 style="margin:0;"><span class="num">3</span> Erfasste Einsätze</h2>
+      <div style="display:flex; gap:8px;">
+        <button class="btn-ghost" onclick="alleLoeschen()">Alle löschen</button>
+        <button class="btn-secondary" onclick="exportExcel()">⬇ Als Excel exportieren</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Datum</th>
+          <th>Verein</th>
+          <th class="num">Stunden</th>
+          <th class="num">Satz €/Std.</th>
+          <th class="num">Betrag</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="einsatzTabelle"></tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <div class="toolbar">
+      <h2 style="margin:0;"><span class="num">4</span> Sicherung</h2>
+    </div>
+    <p class="hint" style="margin-top:0;">Da iPhones Browser-Apps keinen direkten Dauerzugriff auf iCloud Drive erlauben, sicherst du deine Daten mit einem Tipp als kleine Datei – idealerweise in deinem iCloud-Ordner. Bei Bedarf lädst du sie genauso einfach wieder ein.</p>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button class="btn-primary" onclick="backupErstellen()">⬇ Sicherung erstellen</button>
+      <button class="btn-secondary" onclick="document.getElementById('backupDatei').click()">⬆ Sicherung wiederherstellen</button>
+      <input type="file" id="backupDatei" accept="application/json" style="display:none" onchange="backupWiederherstellen(event)">
+    </div>
+    <p class="hint" id="letzteSicherung"></p>
+  </section>
+
+  <section class="panel">
+    <h2><span class="num">5</span> Übersicht</h2>
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div class="grand-total">
+      <span class="label">Gesamtsumme</span>
+      <span class="val" id="gesamtSumme">0,00 €</span>
+    </div>
+  </section>
+
+</main>
+
+<footer>Daten werden ausschließlich lokal im Speicher dieses Browsers abgelegt — keine Übertragung an einen Server.</footer>
+
+<script>
+const LS_VEREINE = 'ue_vereine_v1';
+const LS_EINSATZE = 'ue_einsaetze_v1';
+
+let vereine = [];
+let einsaetze = [];
+
+function geldFormat(n){
+  return n.toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+}
+
+function laden(){
+  try{
+    vereine = JSON.parse(localStorage.getItem(LS_VEREINE)) || null;
+  }catch(e){ vereine = null; }
+  if(!vereine){
+    vereine = [
+      { id: cryptoId(), name: 'TSV Musterstadt', satz: 18 },
+      { id: cryptoId(), name: 'SV Beispielhausen', satz: 22 },
+      { id: cryptoId(), name: 'Turnverein Nordstadt', satz: 15 }
+    ];
+    speichernVereine();
+  }
+  try{
+    einsaetze = JSON.parse(localStorage.getItem(LS_EINSATZE)) || [];
+  }catch(e){ einsaetze = []; }
+}
+
+function cryptoId(){
+  return 'id-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+}
+
+function speichernVereine(){
+  localStorage.setItem(LS_VEREINE, JSON.stringify(vereine));
+}
+function speichernEinsaetze(){
+  localStorage.setItem(LS_EINSATZE, JSON.stringify(einsaetze));
+}
+
+function vereinListeRendern(){
+  const el = document.getElementById('vereinListe');
+  if(vereine.length === 0){
+    el.innerHTML = '<p class="hint">Noch keine Vereine angelegt.</p>';
+  } else {
+    el.innerHTML = vereine.map(v => `
+      <div class="verein-chip">
+        <div class="meta">
+          <span class="name">${escapeHtml(v.name)}</span><br>
+          <span class="satz">${geldFormat(v.satz)} / Stunde</span>
+        </div>
+        <div class="actions">
+          <button class="btn-ghost" onclick="vereinBearbeiten('${v.id}')">Bearbeiten</button>
+          <button class="btn-danger" onclick="vereinLoeschen('${v.id}')">Entfernen</button>
+        </div>
+      </div>
+    `).join('');
+  }
+  const select = document.getElementById('einsatzVerein');
+  const aktuelleAuswahl = select.value;
+  select.innerHTML = vereine.map(v => `<option value="${v.id}">${escapeHtml(v.name)}</option>`).join('');
+  if(vereine.some(v => v.id === aktuelleAuswahl)){
+    select.value = aktuelleAuswahl;
+  }
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function vereinHinzufuegen(){
+  const nameEl = document.getElementById('neuerVereinName');
+  const satzEl = document.getElementById('neuerVereinSatz');
+  const name = nameEl.value.trim();
+  const satz = parseFloat(satzEl.value.replace(',', '.'));
+  if(!name){ alert('Bitte einen Vereinsnamen eingeben.'); return; }
+  if(isNaN(satz) || satz < 0){ alert('Bitte einen gültigen Stundensatz eingeben.'); return; }
+  vereine.push({ id: cryptoId(), name, satz });
+  speichernVereine();
+  nameEl.value = ''; satzEl.value = '';
+  vereinListeRendern();
+  vorschauAktualisieren();
+}
+
+function vereinBearbeiten(id){
+  const v = vereine.find(x => x.id === id);
+  if(!v) return;
+  const neuerName = prompt('Vereinsname:', v.name);
+  if(neuerName === null) return;
+  const neuerSatzStr = prompt('Stundensatz (€):', v.satz);
+  if(neuerSatzStr === null) return;
+  const neuerSatz = parseFloat(neuerSatzStr.replace(',', '.'));
+  if(!neuerName.trim() || isNaN(neuerSatz) || neuerSatz < 0){
+    alert('Ungültige Eingabe — Änderung wurde nicht übernommen.');
+    return;
+  }
+  v.name = neuerName.trim();
+  v.satz = neuerSatz;
+  speichernVereine();
+  vereinListeRendern();
+  tabelleRendern();
+  vorschauAktualisieren();
+}
+
+function vereinLoeschen(id){
+  const inBenutzung = einsaetze.some(e => e.vereinId === id);
+  if(inBenutzung && !confirm('Für diesen Verein gibt es bereits erfasste Einsätze. Diese bleiben mit dem zuletzt gespeicherten Namen und Satz erhalten, der Verein verschwindet aber aus der Auswahl. Trotzdem entfernen?')){
+    return;
+  }
+  vereine = vereine.filter(v => v.id !== id);
+  speichernVereine();
+  vereinListeRendern();
+  vorschauAktualisieren();
+}
+
+function vorschauAktualisieren(){
+  const vereinId = document.getElementById('einsatzVerein').value;
+  const stunden = parseFloat(document.getElementById('einsatzStunden').value.replace(',', '.')) || 0;
+  const v = vereine.find(x => x.id === vereinId);
+  const satz = v ? v.satz : 0;
+  const betrag = stunden * satz;
+  document.getElementById('vorschau').innerHTML = `<span>Berechneter Betrag</span>${geldFormat(betrag)}`;
+}
+
+function einsatzHinzufuegen(){
+  const vereinId = document.getElementById('einsatzVerein').value;
+  const datum = document.getElementById('einsatzDatum').value;
+  const stundenEl = document.getElementById('einsatzStunden');
+  const stunden = parseFloat(stundenEl.value.replace(',', '.'));
+
+  const v = vereine.find(x => x.id === vereinId);
+  if(!v){ alert('Bitte zuerst einen Verein anlegen und auswählen.'); return; }
+  if(!datum){ alert('Bitte ein Datum auswählen.'); return; }
+  if(isNaN(stunden) || stunden <= 0){ alert('Bitte eine gültige Stundenzahl eingeben.'); return; }
+
+  einsaetze.push({
+    id: cryptoId(),
+    vereinId: v.id,
+    vereinName: v.name,
+    datum,
+    stunden,
+    satz: v.satz,
+    betrag: stunden * v.satz
+  });
+  speichernEinsaetze();
+  stundenEl.value = '';
+  vorschauAktualisieren();
+  tabelleRendern();
+  summaryRendern();
+}
+
+function einsatzLoeschen(id){
+  einsaetze = einsaetze.filter(e => e.id !== id);
+  speichernEinsaetze();
+  tabelleRendern();
+  summaryRendern();
+}
+
+function alleLoeschen(){
+  if(einsaetze.length === 0) return;
+  if(confirm('Wirklich alle erfassten Einsätze löschen? Dies kann nicht rückgängig gemacht werden.')){
+    einsaetze = [];
+    speichernEinsaetze();
+    tabelleRendern();
+    summaryRendern();
+  }
+}
+
+function datumFormat(iso){
+  const [y,m,t] = iso.split('-');
+  return `${t}.${m}.${y}`;
+}
+
+function tabelleRendern(){
+  const tbody = document.getElementById('einsatzTabelle');
+  if(einsaetze.length === 0){
+    tbody.innerHTML = '<tr class="empty"><td colspan="6">Noch keine Einsätze erfasst.</td></tr>';
+    return;
+  }
+  const sortiert = [...einsaetze].sort((a,b) => a.datum.localeCompare(b.datum));
+  tbody.innerHTML = sortiert.map(e => `
+    <tr>
+      <td>${datumFormat(e.datum)}</td>
+      <td>${escapeHtml(e.vereinName)}</td>
+      <td class="num">${e.stunden.toLocaleString('de-DE')}</td>
+      <td class="num">${geldFormat(e.satz)}</td>
+      <td class="num">${geldFormat(e.betrag)}</td>
+      <td><button class="btn-danger" onclick="einsatzLoeschen('${e.id}')">Löschen</button></td>
+    </tr>
+  `).join('');
+}
+
+function summaryRendern(){
+  const proVerein = {};
+  einsaetze.forEach(e => {
+    if(!proVerein[e.vereinName]) proVerein[e.vereinName] = 0;
+    proVerein[e.vereinName] += e.betrag;
+  });
+  const grid = document.getElementById('summaryGrid');
+  const namen = Object.keys(proVerein).sort();
+  if(namen.length === 0){
+    grid.innerHTML = '<div class="label">Keine Daten vorhanden.</div>';
+  } else {
+    grid.innerHTML = namen.map(n => `
+      <div class="label">${escapeHtml(n)}</div>
+      <div class="val">${geldFormat(proVerein[n])}</div>
+    `).join('');
+  }
+  const gesamt = einsaetze.reduce((sum, e) => sum + e.betrag, 0);
+  document.getElementById('gesamtSumme').textContent = geldFormat(gesamt);
+}
+
+function csvZelle(wert){
+  const text = String(wert);
+  if(text.includes(';') || text.includes('"') || text.includes('\n')){
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+  return text;
+}
+
+function csvZahl(n){
+  // Deutsches Zahlenformat: Komma statt Punkt, passend zu Excel mit deutscher Spracheinstellung
+  return n.toFixed(2).replace('.', ',');
+}
+
+function exportExcel(){
+  if(einsaetze.length === 0){
+    alert('Es sind keine Einsätze zum Exportieren vorhanden.');
+    return;
+  }
+  const sortiert = [...einsaetze].sort((a,b) => a.datum.localeCompare(b.datum));
+  const gesamt = sortiert.reduce((s,e) => s + e.betrag, 0);
+
+  const zeilen = [];
+  zeilen.push(['Datum', 'Verein', 'Stunden', 'Satz (€/Std.)', 'Betrag (€)']);
+  sortiert.forEach(e => {
+    zeilen.push([
+      datumFormat(e.datum),
+      csvZelle(e.vereinName),
+      csvZahl(e.stunden),
+      csvZahl(e.satz),
+      csvZahl(e.betrag)
+    ]);
+  });
+  zeilen.push(['', '', '', '', '']);
+  zeilen.push(['', '', '', 'Gesamt:', csvZahl(gesamt)]);
+
+  // Excel mit deutscher Spracheinstellung erwartet Semikolon als Trennzeichen
+  const csvInhalt = zeilen.map(z => z.join(';')).join('\r\n');
+  // BOM voranstellen, damit Umlaute (ä, ö, ü, €) in Excel korrekt angezeigt werden
+  const blob = new Blob(['\uFEFF' + csvInhalt], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const heute = new Date().toISOString().slice(0,10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Uebungsleiter-Abrechnung_${heute}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+const LS_LETZTE_SICHERUNG = 'ue_letzte_sicherung_v1';
+
+function backupErstellen(){
+  const payload = {
+    erstelltAm: new Date().toISOString(),
+    vereine,
+    einsaetze
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const heute = new Date().toISOString().slice(0,10);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Uebungsleiter-Sicherung_${heute}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  localStorage.setItem(LS_LETZTE_SICHERUNG, new Date().toISOString());
+  letzteSicherungAnzeigen();
+}
+
+function backupWiederherstellen(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const daten = JSON.parse(e.target.result);
+      if(!Array.isArray(daten.vereine) || !Array.isArray(daten.einsaetze)){
+        throw new Error('Ungültiges Format');
+      }
+      const datumHinweis = daten.erstelltAm ? new Date(daten.erstelltAm).toLocaleString('de-DE') : 'unbekannt';
+      if(!confirm(`Sicherung vom ${datumHinweis} laden? Deine aktuell gespeicherten Daten in diesem Browser werden dabei ersetzt.`)){
+        event.target.value = '';
+        return;
+      }
+      vereine = daten.vereine;
+      einsaetze = daten.einsaetze;
+      speichernVereine();
+      speichernEinsaetze();
+      vereinListeRendern();
+      vorschauAktualisieren();
+      tabelleRendern();
+      summaryRendern();
+      alert('Sicherung erfolgreich wiederhergestellt.');
+    }catch(err){
+      alert('Diese Datei konnte nicht gelesen werden. Bitte eine gültige Sicherungsdatei dieser App auswählen.');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function letzteSicherungAnzeigen(){
+  const ts = localStorage.getItem(LS_LETZTE_SICHERUNG);
+  const el = document.getElementById('letzteSicherung');
+  if(!ts){
+    el.textContent = 'Noch keine Sicherung erstellt.';
+    return;
+  }
+  const datum = new Date(ts);
+  const tageHer = Math.floor((Date.now() - datum.getTime()) / (1000*60*60*24));
+  let hinweis = `Letzte Sicherung: ${datum.toLocaleString('de-DE')}`;
+  if(tageHer >= 14){
+    hinweis += ' — das ist schon eine Weile her, eine neue Sicherung wäre sinnvoll.';
+  }
+  el.textContent = hinweis;
+}
+
+// Init
+laden();
+vereinListeRendern();
+document.getElementById('einsatzDatum').valueAsDate = new Date();
+vorschauAktualisieren();
+tabelleRendern();
+summaryRendern();
+letzteSicherungAnzeigen();
+</script>
+
+</body>
+</html>
